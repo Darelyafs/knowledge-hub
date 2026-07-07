@@ -2,7 +2,7 @@
 知识共享库 — Flask Web 应用
 打开浏览器就能直接浏览、添加、编辑、删除内容，无需注册。
 
-部署模式：Supabase (PostgreSQL) + Cloudflare R2 — 数据永久保存，免费
+部署模式：Supabase (PostgreSQL + Storage) — 数据永久保存，免费
 本地模式：SQLite + 本地文件 — 开箱即用，无需配置
 """
 import os
@@ -17,14 +17,12 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 # ── 环境检测 ──────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_URL = os.environ.get("DATABASE_URL", "")              # Supabase PostgreSQL
-R2_ENDPOINT = os.environ.get("R2_ENDPOINT_URL", "")            # Cloudflare R2
-R2_KEY_ID = os.environ.get("R2_ACCESS_KEY_ID", "")
-R2_KEY_SECRET = os.environ.get("R2_SECRET_ACCESS_KEY", "")
-R2_BUCKET = os.environ.get("R2_BUCKET_NAME", "")
-R2_PUBLIC = os.environ.get("R2_PUBLIC_URL", "")                # 如 https://pub-xxx.r2.dev
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")              # Supabase project URL
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")     # Supabase service_role key
+SUPABASE_BUCKET = os.environ.get("SUPABASE_BUCKET", "pdfs")   # Storage bucket name
 
 USE_PG = bool(DATABASE_URL)
-USE_R2 = all([R2_ENDPOINT, R2_KEY_ID, R2_KEY_SECRET, R2_BUCKET])
+USE_SUPABASE_STORAGE = bool(SUPABASE_URL and SUPABASE_KEY)
 
 PDF_MAX_SIZE = 10 * 1024 * 1024  # 10MB
 ALLOWED_EXTENSIONS = {"pdf"}
@@ -42,21 +40,16 @@ READ_CATEGORIES = ["技术书籍", "人文社科", "产品管理", "其他"]
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", os.urandom(24).hex())
 
-# ── R2 客户端（懒加载）─────────────────────────────────
-_r2_client = None
+# ── Supabase Storage 客户端（懒加载）────────────────────
+_supabase = None
 
 
-def get_r2():
-    global _r2_client
-    if _r2_client is None and USE_R2:
-        import boto3
-        _r2_client = boto3.client(
-            "s3",
-            endpoint_url=R2_ENDPOINT,
-            aws_access_key_id=R2_KEY_ID,
-            aws_secret_access_key=R2_KEY_SECRET,
-        )
-    return _r2_client
+def get_supabase():
+    global _supabase
+    if _supabase is None and USE_SUPABASE_STORAGE:
+        from supabase import create_client
+        _supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    return _supabase
 
 
 # ── 数据库抽象层 ──────────────────────────────────────
@@ -192,8 +185,8 @@ def pdf_url(pdf_key):
     """根据 key 生成 PDF 访问 URL"""
     if not pdf_key:
         return ""
-    if USE_R2 and R2_PUBLIC:
-        return f"{R2_PUBLIC.rstrip('/')}/{pdf_key}"
+    if USE_SUPABASE_STORAGE and SUPABASE_URL:
+        return f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET}/{pdf_key}"
     return url_for("uploaded_file", filename=pdf_key)
 
 
@@ -203,24 +196,26 @@ app.jinja_env.filters["format_date"] = format_date
 app.jinja_env.filters["pdf_url"] = pdf_url
 
 
-# ── 文件上传（R2 或本地）────────────────────────────────
+# ── 文件上传（Supabase Storage 或本地）─────────────────
 def upload_pdf(file, old_key=""):
-    """上传 PDF，返回存储 key。R2 模式返回 object key，本地模式返回文件名"""
+    """上传 PDF，返回存储 key"""
     if not file or not file.filename or not allowed_file(file.filename):
         return old_key
 
     filename = secure_filename(file.filename)
     name, ext = os.path.splitext(filename)
-    key = f"pdfs/{name}_{datetime.now().strftime('%Y%m%d%H%M%S')}{ext}"
+    key = f"{name}_{datetime.now().strftime('%Y%m%d%H%M%S')}{ext}"
 
-    if USE_R2:
-        r2 = get_r2()
+    if USE_SUPABASE_STORAGE:
+        supabase = get_supabase()
         file_bytes = file.read()
-        r2.upload_fileobj(io.BytesIO(file_bytes), R2_BUCKET, key, ExtraArgs={"ContentType": "application/pdf"})
+        supabase.storage.from_(SUPABASE_BUCKET).upload(
+            key, file_bytes, {"content-type": "application/pdf"}
+        )
         # 删除旧文件
         if old_key:
             try:
-                r2.delete_object(Bucket=R2_BUCKET, Key=old_key)
+                supabase.storage.from_(SUPABASE_BUCKET).remove([old_key])
             except Exception:
                 pass
     else:
@@ -239,9 +234,9 @@ def delete_pdf(key):
     """删除存储中的 PDF"""
     if not key:
         return
-    if USE_R2:
+    if USE_SUPABASE_STORAGE:
         try:
-            get_r2().delete_object(Bucket=R2_BUCKET, Key=key)
+            get_supabase().storage.from_(SUPABASE_BUCKET).remove([key])
         except Exception:
             pass
     else:
@@ -493,8 +488,8 @@ if __name__ == "__main__":
         print("  DB:   PostgreSQL (Supabase)")
     else:
         print(f"  DB:   SQLite -> {DB_PATH}")
-    if USE_R2:
-        print(f"  File: Cloudflare R2 -> {R2_BUCKET}")
+    if USE_SUPABASE_STORAGE:
+        print(f"  File: Supabase Storage -> {SUPABASE_BUCKET}")
     else:
         print(f"  File: Local -> {UPLOAD_DIR}")
     print("=" * 55)
