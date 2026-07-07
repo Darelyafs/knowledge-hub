@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+data/knowledge.db
+data/uploads/*
+!data/uploads/.gitkeep

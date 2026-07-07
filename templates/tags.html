@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}标签索引{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <h1>🏷️ 标签索引</h1>
+</div>
+
+{% if all_tags %}
+    <p style="color:var(--text-muted);margin-bottom:20px;">共 {{ all_tags|length }} 个标签，点击可筛选相关内容。</p>
+    <div class="tag-cloud">
+        {% for tag in all_tags %}
+        <div style="text-align:center;">
+            <a href="{{ url_for('link_list', tag=tag) }}" class="tag" style="font-size:0.9rem;">{{ tag }}</a>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px;">
+                <a href="{{ url_for('link_list', tag=tag) }}">链接</a> ·
+                <a href="{{ url_for('read_list', tag=tag) }}">读后感</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div class="icon">🏷️</div>
+        <p>还没有标签。添加链接或读后感时输入标签即可创建。</p>
+        <a href="{{ url_for('link_add') }}" class="btn btn-primary">+ 添加第一条内容</a>
+    </div>
+{% endif %}
+
+{% endblock %}
