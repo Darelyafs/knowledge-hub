@@ -149,15 +149,13 @@ a:hover { text-decoration: underline; }
 .card-body p { margin-bottom: 6px; }
 .card-actions {
     position: absolute;
-    top: 16px;
     right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
-    gap: 4px;
-    opacity: 0;
-    transition: opacity 0.15s;
+    gap: 8px;
 }
-.card:hover .card-actions { opacity: 1; }
-@media (hover: none) { .card-actions { opacity: 1; } }
+.card-actions .btn { font-size: 0.85rem; padding: 6px 14px; }
 
 /* ── 按钮 ────────────────────────────────────────── */
 .btn {
@@ -282,6 +280,33 @@ select.form-control { cursor: pointer; }
 @media (max-width: 700px) { .home-grid { grid-template-columns: 1fr; } }
 .home-section h2 { font-size: 1.15rem; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--primary-light); }
 
+/* ── 模块入口卡片 ────────────────────────────────── */
+.module-card {
+    display: block;
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    text-align: center;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: var(--text);
+}
+.module-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 16px rgba(79,70,229,0.1);
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+.module-icon { font-size: 2.8rem; margin-bottom: 8px; }
+.module-num { font-size: 2.4rem; font-weight: 700; color: var(--primary); line-height: 1; }
+.module-title { font-size: 1.2rem; font-weight: 700; margin: 8px 0 4px; color: var(--text); }
+.module-desc { font-size: 0.85rem; color: var(--text-muted); }
+
+/* ── 搜索图标 ────────────────────────────────────── */
+.search-icon { font-size: 0.85rem; margin-right: 2px; }
+.nav-search { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+
 /* ── 标签云 ──────────────────────────────────────── */
 .tag-cloud { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
 .tag-cloud .tag { font-size: 0.9rem; padding: 5px 16px; }
@@ -314,7 +339,7 @@ select.form-control { cursor: pointer; }
 /* ── 响应式优化 ──────────────────────────────────── */
 @media (max-width: 500px) {
     .card { padding: 14px 16px; }
-    .card-actions { position: static; margin-bottom: 8px; }
+    .card-actions { position: static; margin-top: 8px; transform: none; }
     .page-header { flex-direction: column; align-items: flex-start; }
     .btn { font-size: 0.8rem; padding: 6px 12px; }
 }

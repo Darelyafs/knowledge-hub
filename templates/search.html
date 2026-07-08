@@ -6,69 +6,61 @@
     <h1>🔍 搜索结果</h1>
 </div>
 
-<div class="search-stats">
+<p style="color:var(--text-muted);margin-bottom:20px">
     搜索 "<strong>{{ q }}</strong>" —
-    找到 <strong>{{ link_results|length }}</strong> 条链接和 <strong>{{ read_results|length }}</strong> 条读后感
-</div>
+    找到 <strong>{{ links|length }}</strong> 条网址和 <strong>{{ reads|length }}</strong> 条 PDF
+</p>
 
-{% if not link_results and not read_results %}
+{% if not links and not reads %}
     <div class="empty-state">
         <div class="icon">🔍</div>
         <p>没有找到与 "<strong>{{ q }}</strong>" 相关的内容</p>
-        <p style="font-size:0.85rem;">试试其他关键词？</p>
     </div>
 {% endif %}
 
-{% if link_results %}
-<h2 style="font-size:1.1rem;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--primary-light);">🔗 链接 ({{ link_results|length }})</h2>
-{% for link in link_results %}
+{% if links %}
+<h2 style="font-size:1.1rem;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--primary-light);">🔗 网址 ({{ links|length }})</h2>
+{% for link in links %}
 <div class="card">
-    <div class="card-actions">
-        <a href="{{ url_for('link_edit', link_id=link.id) }}" class="btn btn-xs" title="编辑">✏️</a>
-    </div>
     <div class="card-title">
         <a href="{{ link.url }}" target="_blank" rel="noopener">{{ link.title }} ↗</a>
     </div>
     <div class="card-meta">
-        <span class="tag">{{ link.category }}</span>
-        <span>{{ link.status }}</span>
+        <span class="tag">{{ link.category or '其他' }}</span>
+        {% if link.thoughts %}<span>👤 {{ link.thoughts }}</span>{% endif %}
         <span>{{ link.updated_at | format_date }}</span>
     </div>
     {% if link.summary %}
     <div class="card-body">{{ link.summary[:200] }}{% if link.summary|length > 200 %}...{% endif %}</div>
     {% endif %}
-    {% if link.thoughts %}
-    <div class="card-body" style="margin-top:4px;font-style:italic;">💭 {{ link.thoughts[:150] }}{% if link.thoughts|length > 150 %}...{% endif %}</div>
-    {% endif %}
+    <div class="card-actions">
+        <a href="{{ url_for('link_edit', link_id=link.id) }}" class="btn btn-sm">✏️ 编辑</a>
+    </div>
 </div>
 {% endfor %}
 {% endif %}
 
-{% if read_results %}
-<h2 style="font-size:1.1rem;margin:24px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--primary-light);">📖 读后感 ({{ read_results|length }})</h2>
-{% for read in read_results %}
+{% if reads %}
+<h2 style="font-size:1.1rem;margin:24px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--primary-light);">📄 PDF ({{ reads|length }})</h2>
+{% for read in reads %}
 <div class="card">
-    <div class="card-actions">
-        <a href="{{ url_for('read_edit', read_id=read.id) }}" class="btn btn-xs" title="编辑">✏️</a>
-    </div>
     <div class="card-title">{{ read.title }}</div>
     <div class="card-meta">
-        <span class="tag">{{ read.category }}</span>
-        {% if read.author %}<span>✍️ {{ read.author }}</span>{% endif %}
-        {% if read.rating > 0 %}<span class="stars">{% for _ in range(read.rating) %}⭐{% endfor %}</span>{% endif %}
+        <span class="tag">{{ read.category or '其他' }}</span>
+        {% if read.author %}<span>👤 {{ read.author }}</span>{% endif %}
         <span>{{ read.updated_at | format_date }}</span>
     </div>
     {% if read.summary %}
     <div class="card-body">{{ read.summary[:200] }}{% if read.summary|length > 200 %}...{% endif %}</div>
     {% endif %}
-    {% if read.thoughts %}
-    <div class="card-body" style="margin-top:4px;font-style:italic;">💭 {{ read.thoughts[:150] }}{% if read.thoughts|length > 150 %}...{% endif %}</div>
-    {% endif %}
+    <div class="card-actions">
+        <a href="{{ url_for('read_edit', read_id=read.id) }}" class="btn btn-sm">✏️ 编辑</a>
+    </div>
 </div>
 {% endfor %}
 {% endif %}
 
-{% if link_results or read_results %}
+{% if links or reads %}
 <div style="text-align:center;margin-top:24px;">
     <a href="{{ url_for('index') }}" class="btn">← 返回首页</a>
 </div>

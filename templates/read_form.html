@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}{% if read %}编辑{% else %}添加{% endif %}读后感{% endblock %}
+{% block title %}{% if read %}编辑{% else %}添加{% endif %} PDF{% endblock %}
 {% block content %}
 
 <div class="page-header">
-    <h1>{% if read %}✏️ 编辑读后感{% else %}➕ 添加新读后感{% endif %}</h1>
+    <h1>{% if read %}✏️ 编辑 PDF{% else %}➕ 添加新 PDF{% endif %}</h1>
     <a href="{{ url_for('read_list') }}" class="btn">← 返回列表</a>
 </div>
 
@@ -11,52 +11,24 @@
     {% if read %}<input type="hidden" name="id" value="{{ read.id }}">{% endif %}
 
     <div class="form-group">
-        <label for="title">读后感标题 <span style="color:var(--danger);">*</span></label>
+        <label for="title">标题 <span style="color:var(--danger);">*</span></label>
         <input type="text" name="title" id="title" class="form-control" required
                value="{{ read.title if read else '' }}" placeholder="如：《代码整洁之道》读后感">
-    </div>
-
-    <div class="form-group">
-        <label for="book">书名 <span class="hint">原著书名</span></label>
-        <input type="text" name="book" id="book" class="form-control"
-               value="{{ read.book if read else '' }}" placeholder="如：Clean Architecture">
-    </div>
-
-    <div class="form-group">
-        <label for="author">作者</label>
-        <input type="text" name="author" id="author" class="form-control"
-               value="{{ read.author if read else '' }}" placeholder="如：Robert C. Martin">
     </div>
 
     <div class="form-group">
         <label for="category">分类</label>
         <select name="category" id="category" class="form-control">
             {% for cat in categories %}
-            <option value="{{ cat }}" {% if read and read.category == cat %}selected{% endif %}>{{ cat }}</option>
+            <option value="{{ cat }}" {% if read and read.category == cat %}selected{% elif not read and cat == '其他' %}selected{% endif %}>{{ cat }}</option>
             {% endfor %}
         </select>
     </div>
 
     <div class="form-group">
-        <label for="tags">标签 <span class="hint">多个用逗号分隔</span></label>
-        <input type="text" name="tags" id="tags" class="form-control"
-               value="{{ (read.tags | parse_tags) | join(', ') if read else '' }}"
-               placeholder="如：architecture, best-practices"
-               list="tags-datalist">
-        <datalist id="tags-datalist">
-            {% for t in all_tags %}<option value="{{ t }}">{% endfor %}
-        </datalist>
-    </div>
-
-    <div class="form-group">
-        <label>评分</label>
-        <div class="stars-input" id="stars-input">
-            {% set current_rating = read.rating if read else 0 %}
-            {% for i in range(1, 6) %}
-            <button type="button" data-value="{{ i }}" class="{{ 'empty' if i > current_rating else '' }}" title="{{ i }} 星">⭐</button>
-            {% endfor %}
-        </div>
-        <input type="hidden" name="rating" id="rating-value" value="{{ current_rating }}">
+        <label for="author">上传人</label>
+        <input type="text" name="author" id="author" class="form-control"
+               value="{{ read.author if read else '' }}" placeholder="你的名字">
     </div>
 
     <div class="form-group">
@@ -72,28 +44,9 @@
     </div>
 
     <div class="form-group">
-        <label for="summary">📖 书籍简介</label>
+        <label for="summary">📖 简介</label>
         <textarea name="summary" id="summary" class="form-control" rows="4"
-                  placeholder="简要介绍这本书的内容...">{{ read.summary if read else '' }}</textarea>
-    </div>
-
-    <div class="form-group">
-        <label for="key_points">💡 核心观点</label>
-        <textarea name="key_points" id="key_points" class="form-control" rows="5"
-                  placeholder="1. 观点一&#10;2. 观点二&#10;3. ...">{{ read.key_points if read else '' }}</textarea>
-    </div>
-
-    <div class="form-group">
-        <label for="thoughts">💭 个人感受</label>
-        <textarea name="thoughts" id="thoughts" class="form-control" rows="6"
-                  placeholder="你的读后感、收获、批判性思考...">{{ read.thoughts if read else '' }}</textarea>
-    </div>
-
-    <div class="form-group">
-        <label for="action_items">🎯 行动清单 <span class="hint">每行一个</span></label>
-        <textarea name="action_items" id="action_items" class="form-control" rows="3"
-                  placeholder="- [ ] 尝试将观点一应用到...
-- [ ] 阅读作者推荐的相关书籍...">{{ read.action_items if read else '' }}</textarea>
+                  placeholder="简要描述...">{{ read.summary if read else '' }}</textarea>
     </div>
 
     <div style="display:flex;gap:10px;">
@@ -102,18 +55,4 @@
     </div>
 </form>
 
-{% endblock %}
-{% block scripts %}
-<script>
-// 评分交互
-document.querySelectorAll('#stars-input button').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const value = parseInt(btn.dataset.value);
-        document.getElementById('rating-value').value = value;
-        document.querySelectorAll('#stars-input button').forEach((b, i) => {
-            b.classList.toggle('empty', i >= value);
-        });
-    });
-});
-</script>
 {% endblock %}

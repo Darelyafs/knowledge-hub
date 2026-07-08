@@ -1,67 +1,50 @@
 {% extends "base.html" %}
-{% block title %}读后感{% endblock %}
+{% block title %}PDF{% endblock %}
 {% block content %}
 
 <div class="page-header">
-    <h1>📖 读后感</h1>
-    <a href="{{ url_for('read_add') }}" class="btn btn-primary">+ 添加读后感</a>
+    <h1>📄 PDF</h1>
+    <a href="{{ url_for('read_add') }}" class="btn btn-primary">+ 添加 PDF</a>
 </div>
 
-<!-- 筛选栏 -->
 <div class="filters">
     <span class="filter-label">分类：</span>
-    <a href="{{ url_for('read_list', tag=current_tag) }}" class="btn btn-sm {{ 'btn-primary' if not current_category else '' }}">全部</a>
+    <a href="{{ url_for('read_list') }}" class="btn btn-sm {{ 'btn-primary' if not current_category else '' }}">全部</a>
     {% for cat in categories %}
-    <a href="{{ url_for('read_list', category=cat, tag=current_tag) }}" class="btn btn-sm {{ 'btn-primary' if current_category == cat else '' }}">{{ cat }}</a>
+    <a href="{{ url_for('read_list', category=cat) }}" class="btn btn-sm {{ 'btn-primary' if current_category == cat else '' }}">{{ cat }}</a>
     {% endfor %}
 </div>
 
-{% if current_tag %}
-<p style="margin-bottom:16px;color:var(--text-muted);">
-    筛选标签：<span class="tag">{{ current_tag }}</span>
-    <a href="{{ url_for('read_list', category=current_category) }}">✕ 清除</a>
-</p>
-{% endif %}
-
-<!-- 读后感列表 -->
 {% if reads %}
     {% for read in reads %}
     <div class="card">
-        <div class="card-actions">
-            <a href="{{ url_for('read_edit', read_id=read.id) }}" class="btn btn-xs" title="编辑">✏️</a>
-            <form method="post" action="{{ url_for('read_delete', read_id=read.id) }}" style="display:inline;" onsubmit="event.preventDefault(); confirmDelete(this);">
-                <button type="submit" class="btn btn-xs btn-danger" title="删除">🗑️</button>
-            </form>
-        </div>
         <div class="card-title">{{ read.title }}</div>
         <div class="card-meta">
-            <span class="tag">{{ read.category }}</span>
-            {% if read.book %}<span>📘 {{ read.book }}</span>{% endif %}
-            {% if read.author %}<span>✍️ {{ read.author }}</span>{% endif %}
-            {% if read.rating > 0 %}<span class="stars">{% for _ in range(read.rating) %}⭐{% endfor %}</span>{% endif %}
-            <span>{{ read.created_at | format_date }}</span>
+            <span class="tag">{{ read.category or '其他' }}</span>
+            {% if read.author %}<span>👤 {{ read.author }}</span>{% endif %}
+            <span>{{ read.updated_at | format_date }}</span>
         </div>
         {% if read.summary %}
-        <div class="card-body">
-            <p>{{ read.summary[:200] }}{% if read.summary|length > 200 %}...{% endif %}</p>
+        <div class="card-body">{{ read.summary[:200] }}{% if read.summary|length > 200 %}...{% endif %}</div>
+        {% endif %}
+        {% if read.pdf_key %}
+        <div style="margin-top:8px">
+            <a href="{{ read.pdf_key | pdf_url }}" class="pdf-link" target="_blank">📎 查看 PDF</a>
         </div>
         {% endif %}
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
-            {% if read.pdf_key %}
-            <a href="{{ read.pdf_key | pdf_url }}" class="pdf-link" target="_blank">📎 查看 PDF</a>
-            {% endif %}
-            {% set tags = read.tags | parse_tags %}
-            {% for t in tags %}
-            <a href="{{ url_for('read_list', tag=t) }}" class="tag">{{ t }}</a>
-            {% endfor %}
+        <div class="card-actions">
+            <a href="{{ url_for('read_edit', read_id=read.id) }}" class="btn btn-sm">✏️ 编辑</a>
+            <form method="post" action="{{ url_for('read_delete', read_id=read.id) }}" style="display:inline;" onsubmit="event.preventDefault(); confirmDelete(this);">
+                <button type="submit" class="btn btn-sm btn-danger">🗑️ 删除</button>
+            </form>
         </div>
     </div>
     {% endfor %}
 {% else %}
     <div class="empty-state">
-        <div class="icon">📖</div>
-        <p>{% if current_category or current_tag %}当前筛选条件下没有读后感{% else %}还没有读后感{% endif %}</p>
-        <a href="{{ url_for('read_add') }}" class="btn btn-primary">+ 添加第一篇读后感</a>
+        <div class="icon">📄</div>
+        <p>还没有 PDF</p>
+        <a href="{{ url_for('read_add') }}" class="btn btn-primary">+ 添加第一个 PDF</a>
     </div>
 {% endif %}
 

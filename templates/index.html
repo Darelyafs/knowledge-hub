@@ -2,96 +2,90 @@
 {% block title %}知识共享库 — 首页{% endblock %}
 {% block content %}
 
-<div class="page-header">
-    <h1>👋 欢迎来到知识共享库</h1>
-</div>
-<p style="color:var(--text-muted);margin-bottom:24px;">
-    这里是我们团队的网址收藏 & PDF 读后感共享空间。<strong>打开网页就能编辑，无需注册。</strong>
-</p>
-
-<!-- 统计面板 -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-num">{{ stats.links }}</div>
-        <div class="stat-label">🔗 收藏链接</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-num">{{ stats.reads }}</div>
-        <div class="stat-label">📖 读后感</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-num">{{ stats.tags }}</div>
-        <div class="stat-label">🏷️ 标签</div>
-    </div>
+<div style="text-align:center;padding:20px 0 32px">
+    <h1 style="font-size:2rem;margin-bottom:8px">📚 知识共享库</h1>
+    <p style="color:var(--text-muted);font-size:1rem">网址 · PDF 资料</p>
 </div>
 
-<!-- 快速操作 -->
-<div style="display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap;">
-    <a href="{{ url_for('link_add') }}" class="btn btn-primary">+ 添加链接</a>
-    <a href="{{ url_for('read_add') }}" class="btn btn-primary">+ 添加读后感</a>
-    <a href="{{ url_for('tags_page') }}" class="btn">🏷️ 浏览标签</a>
-</div>
-
-<!-- 最新内容 -->
+<!-- 两大模块入口 -->
 <div class="home-grid">
-    <!-- 最新链接 -->
+    <a href="{{ url_for('link_list') }}" class="module-card">
+        <div class="module-icon">🔗</div>
+        <div class="module-num">{{ link_count }}</div>
+        <div class="module-title">网址</div>
+        <span class="btn btn-primary" style="margin-top:12px">+ 添加网址</span>
+    </a>
+    <a href="{{ url_for('read_list') }}" class="module-card">
+        <div class="module-icon">📄</div>
+        <div class="module-num">{{ read_count }}</div>
+        <div class="module-title">PDF</div>
+        <span class="btn btn-primary" style="margin-top:12px">+ 添加 PDF</span>
+    </a>
+</div>
+
+<!-- 最近更新 -->
+<div class="home-grid" style="margin-top:32px">
     <div class="home-section">
-        <h2>🔗 最新链接</h2>
+        <h2>🔗 最近网址</h2>
         {% if recent_links %}
             {% for link in recent_links %}
             <div class="card">
-                <div class="card-actions">
-                    <a href="{{ url_for('link_edit', link_id=link.id) }}" class="btn btn-xs" title="编辑">✏️</a>
-                </div>
                 <div class="card-title">
-                    <a href="{{ link.url }}" target="_blank" rel="noopener">{{ link.title }}</a>
+                    <a href="{{ link.url }}" target="_blank" rel="noopener">{{ link.title }} ↗</a>
                 </div>
                 <div class="card-meta">
-                    <span class="tag">{{ link.category }}</span>
-                    <span>{{ link.status }}</span>
+                    <span class="tag">{{ link.category or '其他' }}</span>
+                    {% if link.thoughts %}<span>👤 {{ link.thoughts }}</span>{% endif %}
                     <span>{{ link.updated_at | format_date }}</span>
                 </div>
                 {% if link.summary %}
                 <div class="card-body">{{ link.summary[:150] }}{% if link.summary|length > 150 %}...{% endif %}</div>
                 {% endif %}
+                <div class="card-actions">
+                    <a href="{{ url_for('link_edit', link_id=link.id) }}" class="btn btn-sm">✏️ 编辑</a>
+                </div>
             </div>
             {% endfor %}
-            <a href="{{ url_for('link_list') }}" style="font-size:0.9rem;">浏览全部链接 →</a>
+            <a href="{{ url_for('link_list') }}" style="font-size:0.9rem;">浏览全部 →</a>
         {% else %}
             <div class="empty-state">
                 <div class="icon">🔗</div>
-                <p>还没有收藏链接</p>
-                <a href="{{ url_for('link_add') }}" class="btn btn-primary">添加第一个链接</a>
+                <p>还没有网址</p>
+                <a href="{{ url_for('link_add') }}" class="btn btn-primary">添加第一个网址</a>
             </div>
         {% endif %}
     </div>
 
-    <!-- 最新读后感 -->
     <div class="home-section">
-        <h2>📖 最新读后感</h2>
+        <h2>📄 最近 PDF</h2>
         {% if recent_reads %}
             {% for read in recent_reads %}
             <div class="card">
-                <div class="card-actions">
-                    <a href="{{ url_for('read_edit', read_id=read.id) }}" class="btn btn-xs" title="编辑">✏️</a>
-                </div>
                 <div class="card-title">{{ read.title }}</div>
                 <div class="card-meta">
-                    {% if read.author %}<span>{{ read.author }}</span>{% endif %}
-                    {% if read.rating > 0 %}<span class="stars">{% for _ in range(read.rating) %}⭐{% endfor %}</span>{% endif %}
+                    <span class="tag">{{ read.category or '其他' }}</span>
+                    {% if read.author %}<span>👤 {{ read.author }}</span>{% endif %}
                     <span>{{ read.updated_at | format_date }}</span>
                 </div>
                 {% if read.summary %}
                 <div class="card-body">{{ read.summary[:150] }}{% if read.summary|length > 150 %}...{% endif %}</div>
                 {% endif %}
+                {% if read.pdf_key %}
+                <div style="margin-top:8px">
+                    <a href="{{ read.pdf_key | pdf_url }}" class="pdf-link" target="_blank">📎 查看 PDF</a>
+                </div>
+                {% endif %}
+                <div class="card-actions">
+                    <a href="{{ url_for('read_edit', read_id=read.id) }}" class="btn btn-sm">✏️ 编辑</a>
+                </div>
             </div>
             {% endfor %}
-            <a href="{{ url_for('read_list') }}" style="font-size:0.9rem;">浏览全部读后感 →</a>
+            <a href="{{ url_for('read_list') }}" style="font-size:0.9rem;">浏览全部 →</a>
         {% else %}
             <div class="empty-state">
-                <div class="icon">📖</div>
-                <p>还没有读后感</p>
-                <a href="{{ url_for('read_add') }}" class="btn btn-primary">添加第一篇读后感</a>
+                <div class="icon">📄</div>
+                <p>还没有 PDF</p>
+                <a href="{{ url_for('read_add') }}" class="btn btn-primary">添加第一个 PDF</a>
             </div>
         {% endif %}
     </div>

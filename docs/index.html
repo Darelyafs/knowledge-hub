@@ -8,7 +8,7 @@
 <style>
 :root{--p:#4f46e5;--pl:#eef2ff;--s:#059669;--sb:#ecfdf5;--d:#dc2626;--db:#fef2f2;--bg:#f8fafc;--cb:#fff;--b:#e2e8f0;--t:#1e293b;--tm:#94a3b8;--r:10px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t);line-height:1.7;min-height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--t);line-height:1.7;min-height:100vh;display:flex;flex-direction:column}
 a{color:var(--p);text-decoration:none}a:hover{text-decoration:underline}
 .container{max-width:960px;margin:0 auto;padding:0 20px;width:100%}
 .navbar{background:var(--cb);border-bottom:1px solid var(--b);position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,.06)}
@@ -18,7 +18,8 @@ a{color:var(--p);text-decoration:none}a:hover{text-decoration:underline}
 .nav-links{display:flex;gap:4px;flex:1}
 .nav-link{padding:6px 12px;border-radius:6px;font-size:.9rem;color:var(--tm);cursor:pointer;border:none;background:none;font-family:inherit;transition:.15s}
 .nav-link:hover,.nav-link.active{background:var(--pl);color:var(--p);text-decoration:none}
-.nav-search{flex-shrink:0}
+.nav-search{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.search-icon{font-size:.85rem}
 .search-input{padding:6px 14px;border:1px solid var(--b);border-radius:20px;font-size:.85rem;width:160px;outline:none;transition:.15s;background:var(--bg)}
 .search-input:focus{border-color:var(--p);width:200px}
 .nav-toggle{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:4px;padding:4px}
@@ -26,20 +27,19 @@ a{color:var(--p);text-decoration:none}a:hover{text-decoration:underline}
 @media(max-width:700px){.nav-links{display:none;position:absolute;top:56px;left:0;right:0;background:var(--cb);flex-direction:column;padding:12px;border-bottom:1px solid var(--b)}.nav-links.open{display:flex}.nav-toggle{display:flex}.nav-search{margin-left:auto}.search-input{width:120px}.search-input:focus{width:150px}}
 .main-content{flex:1;padding-top:24px;padding-bottom:40px;min-height:80vh}
 .footer{text-align:center;padding:24px 20px;border-top:1px solid var(--b);color:var(--tm);font-size:.9rem;margin-top:auto}
-.footer a{color:var(--p)}
 .flash{padding:10px 18px;border-radius:var(--r);font-size:.9rem;cursor:pointer;margin-bottom:12px;animation:sd .3s}
 .flash-success{background:var(--sb);color:var(--s);border:1px solid #a7f3d0}
 .flash-error{background:var(--db);color:var(--d);border:1px solid #fecaca}
 @keyframes sd{from{transform:translateY(-10px);opacity:0}to{transform:translateY(0);opacity:1}}
-.card{background:var(--cb);border:1px solid var(--b);border-radius:var(--r);padding:20px 24px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);position:relative;transition:.15s}
+.card{background:var(--cb);border:1px solid var(--b);border-radius:var(--r);padding:20px 150px 20px 24px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);position:relative;transition:.15s}
 .card:hover{box-shadow:0 4px 6px rgba(0,0,0,.05)}
+@media(max-width:600px){.card{padding-right:24px}}
 .card-title{font-size:1.1rem;font-weight:600;margin-bottom:4px}
 .card-title a{color:var(--t)}.card-title a:hover{color:var(--p)}
 .card-meta{font-size:.8rem;color:var(--tm);margin-bottom:8px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .card-body{font-size:.9rem;line-height:1.6}
-.card-actions{position:absolute;top:16px;right:20px;display:flex;gap:4px;opacity:0;transition:.15s}
-.card:hover .card-actions{opacity:1}
-@media(hover:none){.card-actions{opacity:1}}
+.card-actions{position:absolute;right:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px}
+@media(max-width:600px){.card-actions{position:static;transform:none;flex-direction:row;margin-top:10px}}
 .page-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px}
 .page-header h1{font-size:1.5rem}
 .btn{display:inline-flex;align-items:center;gap:4px;padding:7px 16px;border:1px solid var(--b);border-radius:6px;font-size:.85rem;cursor:pointer;transition:.15s;background:var(--cb);color:var(--t);font-family:inherit;white-space:nowrap}
@@ -47,11 +47,8 @@ a{color:var(--p);text-decoration:none}a:hover{text-decoration:underline}
 .btn-primary{background:var(--p);color:#fff;border-color:var(--p)}
 .btn-primary:hover{opacity:.9;background:var(--p)}
 .btn-danger{color:var(--d);border-color:#fecaca}.btn-danger:hover{background:var(--db)}
-.btn-sm{padding:4px 10px;font-size:.8rem}
-.btn-xs{padding:3px 8px;font-size:.75rem;border-radius:4px}
-.tag{display:inline-block;padding:2px 10px;background:var(--pl);color:var(--p);border-radius:20px;font-size:.78rem;font-weight:500;transition:.15s;cursor:pointer}
-.tag:hover{background:#dde3ff;text-decoration:none}
-.tags-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.btn-sm{padding:6px 14px;font-size:.85rem}
+.tag{display:inline-block;padding:2px 10px;background:var(--pl);color:var(--p);border-radius:20px;font-size:.78rem;font-weight:500}
 .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--b)}
 .filter-label{font-size:.85rem;color:var(--tm);padding:6px 0}
 .form-group{margin-bottom:18px}
@@ -61,8 +58,6 @@ a{color:var(--p);text-decoration:none}a:hover{text-decoration:underline}
 .form-control:focus{outline:none;border-color:var(--p);box-shadow:0 0 0 3px rgba(79,70,229,.1)}
 textarea.form-control{resize:vertical;min-height:80px}
 select.form-control{cursor:pointer}
-.stars-input{display:flex;gap:4px}.stars-input button{background:none;border:none;font-size:1.5rem;cursor:pointer;padding:0 2px;transition:.1s}
-.stars-input button:hover{transform:scale(1.2)}.stars-input button.empty{filter:grayscale(1)opacity(.3)}
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:28px}
 .stat-card{background:var(--cb);border:1px solid var(--b);border-radius:var(--r);padding:18px 20px;text-align:center}
 .stat-num{font-size:2rem;font-weight:700;color:var(--p)}
@@ -70,16 +65,17 @@ select.form-control{cursor:pointer}
 .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px}
 @media(max-width:700px){.home-grid{grid-template-columns:1fr}}
 .home-section h2{font-size:1.15rem;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--pl)}
-.tag-cloud{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
-.tag-cloud .tag{font-size:.9rem;padding:5px 16px}
+.module-card{display:block;background:var(--cb);border:2px solid var(--b);border-radius:var(--r);padding:28px 24px;text-align:center;transition:all .2s;text-decoration:none;color:var(--t);cursor:pointer}
+.module-card:hover{border-color:var(--p);box-shadow:0 4px 16px rgba(79,70,229,.1);transform:translateY(-2px);text-decoration:none}
+.module-icon{font-size:2.8rem;margin-bottom:8px}
+.module-num{font-size:2.4rem;font-weight:700;color:var(--p);line-height:1}
+.module-title{font-size:1.2rem;font-weight:700;margin:8px 0 4px;color:var(--t)}
 .empty-state{text-align:center;padding:48px 20px;color:var(--tm)}
 .empty-state .icon{font-size:3rem;margin-bottom:12px}
-.stars{color:#f59e0b;letter-spacing:1px}
 .pdf-link{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fef3c7;color:#92400e;border-radius:4px;font-size:.8rem}
 .pdf-link:hover{background:#fde68a;text-decoration:none}
 .hidden{display:none!important}
 .spinner{text-align:center;padding:40px;color:var(--tm)}
-@media(max-width:500px){.card{padding:14px 16px}.card-actions{position:static;margin-bottom:8px}.page-header{flex-direction:column;align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -88,11 +84,10 @@ select.form-control{cursor:pointer}
     <span class="nav-brand" onclick="showPage('home')">📚 知识共享库</span>
     <div class="nav-links" id="navLinks">
       <button class="nav-link active" data-page="home" onclick="showPage('home')">首页</button>
-      <button class="nav-link" data-page="links" onclick="showPage('links')">🔗 网址收藏</button>
-      <button class="nav-link" data-page="reads" onclick="showPage('reads')">📖 读后感</button>
-      <button class="nav-link" data-page="tags" onclick="showPage('tags')">🏷️ 标签</button>
+      <button class="nav-link" data-page="links" onclick="showPage('links')">🔗 网址</button>
+      <button class="nav-link" data-page="reads" onclick="showPage('reads')">📄 PDF</button>
     </div>
-    <input type="search" class="search-input" id="searchBox" placeholder="搜索..." onkeydown="if(event.key==='Enter')search()">
+    <span class="nav-search"><span class="search-icon">🔍</span><input type="search" class="search-input" id="searchBox" placeholder="搜索..." onkeydown="if(event.key==='Enter')search()"></span>
     <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')">
       <span></span><span></span><span></span>
     </button>
@@ -100,9 +95,7 @@ select.form-control{cursor:pointer}
 </nav>
 <div id="flashContainer" class="container"></div>
 <main class="container main-content" id="mainContent"></main>
-<footer class="footer">
-  <p>📚 知识共享库 — 打开网页就能编辑，无需注册</p>
-</footer>
+<footer class="footer"><p>📚 知识共享库</p></footer>
 
 <script>
 // ── Init ───────────────────────────────────────────
@@ -112,19 +105,16 @@ const BUCKET = 'pdfs';
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const CATS_L = ['前端开发','后端开发','工具效率','设计创意','AI/ML','其他'];
-const CATS_R = ['技术书籍','人文社科','产品管理','其他'];
+const CATS = ['科研学习','工具便利','其他'];
 
 let currentPage = 'home';
 
-// ── Flash ──────────────────────────────────────────
 function flash(msg, type='success') {
   const el = document.getElementById('flashContainer');
   el.innerHTML = `<div class="flash flash-${type}" onclick="this.remove()">${msg}</div>`;
   setTimeout(() => el.innerHTML = '', 4000);
 }
 
-// ── Page navigation ────────────────────────────────
 function showPage(page) {
   currentPage = page;
   document.querySelectorAll('.nav-link').forEach(b => b.classList.toggle('active', b.dataset.page === page));
@@ -133,7 +123,6 @@ function showPage(page) {
 }
 function search() { showPage('search'); }
 
-// ── Render ─────────────────────────────────────────
 async function render() {
   const mc = document.getElementById('mainContent');
   mc.innerHTML = '<div class="spinner">加载中...</div>';
@@ -142,7 +131,6 @@ async function render() {
       case 'home': mc.innerHTML = await renderHome(); break;
       case 'links': mc.innerHTML = await renderLinks(); break;
       case 'reads': mc.innerHTML = await renderReads(); break;
-      case 'tags': mc.innerHTML = await renderTags(); break;
       case 'search': mc.innerHTML = await renderSearch(); break;
       case 'linkForm': mc.innerHTML = await renderLinkForm(); break;
       case 'readForm': mc.innerHTML = await renderReadForm(); break;
@@ -155,42 +143,44 @@ async function render() {
 
 // ── Home ───────────────────────────────────────────
 async function renderHome() {
-  const {data:links,error} = await sb.from('links').select('*',{count:'exact'}).order('updated_at',{ascending:false}).limit(5);
-  const {data:reads,error:rerr} = await sb.from('reads').select('*',{count:'exact'}).order('updated_at',{ascending:false}).limit(5);
   const {count:lc} = await sb.from('links').select('*',{count:'exact',head:true});
   const {count:rc} = await sb.from('reads').select('*',{count:'exact',head:true});
+  const {data:links} = await sb.from('links').select('*').order('updated_at',{ascending:false}).limit(3);
+  const {data:reads} = await sb.from('reads').select('*').order('updated_at',{ascending:false}).limit(3);
 
-  // Gather all tags
-  const allT = new Set();
-  (links||[]).forEach(l => parsTags(l.tags).forEach(t => allT.add(t)));
-  (reads||[]).forEach(r => parsTags(r.tags).forEach(t => allT.add(t)));
-
-  let h = `<div class="page-header"><h1>👋 欢迎来到知识共享库</h1></div>
-    <p style="color:var(--tm);margin-bottom:24px">打开网页就能编辑，无需注册。</p>
-    <div class="stats-grid">
-      <div class="stat-card"><div class="stat-num">${lc||0}</div><div class="stat-label">🔗 收藏链接</div></div>
-      <div class="stat-card"><div class="stat-num">${rc||0}</div><div class="stat-label">📖 读后感</div></div>
-      <div class="stat-card"><div class="stat-num">${allT.size}</div><div class="stat-label">🏷️ 标签</div></div>
-    </div>
-    <div style="display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap">
-      <button class="btn btn-primary" onclick="editLink()">+ 添加链接</button>
-      <button class="btn btn-primary" onclick="editRead()">+ 添加读后感</button>
-      <button class="btn" onclick="showPage('tags')">🏷️ 浏览标签</button>
+  let h = `
+    <div style="text-align:center;padding:20px 0 32px">
+      <h1 style="font-size:2rem;margin-bottom:8px">📚 知识共享库</h1>
+      <p style="color:var(--tm);font-size:1rem">网址 · PDF 资料</p>
     </div>
     <div class="home-grid">
-      <div class="home-section"><h2>🔗 最新链接</h2>`;
+      <div class="module-card" onclick="showPage('links')">
+        <div class="module-icon">🔗</div>
+        <div class="module-num">${lc||0}</div>
+        <div class="module-title">网址</div>
+        <span class="btn btn-primary" style="margin-top:12px">+ 添加网址</span>
+      </div>
+      <div class="module-card" onclick="showPage('reads')">
+        <div class="module-icon">📄</div>
+        <div class="module-num">${rc||0}</div>
+        <div class="module-title">PDF</div>
+        <span class="btn btn-primary" style="margin-top:12px">+ 添加 PDF</span>
+      </div>
+    </div>
+    <div class="home-grid" style="margin-top:32px">
+      <div class="home-section"><h2>🔗 最近网址</h2>`;
   if(links&&links.length) {
     links.forEach(l => h += cardLink(l));
     h += `<a href="#" onclick="showPage('links')" style="font-size:.9rem">浏览全部 →</a>`;
   } else {
-    h += `<div class="empty-state"><div class="icon">🔗</div><p>还没有链接</p></div>`;
+    h += `<div class="empty-state"><div class="icon">🔗</div><p>还没有网址</p></div>`;
   }
-  h += `</div><div class="home-section"><h2>📖 最新读后感</h2>`;
+  h += `</div><div class="home-section"><h2>📄 最近 PDF</h2>`;
   if(reads&&reads.length) {
     reads.forEach(r => h += cardRead(r));
     h += `<a href="#" onclick="showPage('reads')" style="font-size:.9rem">浏览全部 →</a>`;
   } else {
-    h += `<div class="empty-state"><div class="icon">📖</div><p>还没有读后感</p></div>`;
+    h += `<div class="empty-state"><div class="icon">📄</div><p>还没有 PDF</p></div>`;
   }
   h += `</div></div>`;
   return h;
@@ -200,31 +190,26 @@ async function renderHome() {
 async function renderLinks() {
   const urlP = new URLSearchParams(window.location.search);
   const cat = urlP.get('category')||'';
-  const tag = urlP.get('tag')||'';
   let q = sb.from('links').select('*').order('updated_at',{ascending:false});
   if(cat) q = q.eq('category',cat);
-  let {data} = await q;
-  if(tag) data = (data||[]).filter(l => parsTags(l.tags).includes(tag));
+  const {data} = await q;
 
-  let h = `<div class="page-header"><h1>🔗 网址收藏</h1><button class="btn btn-primary" onclick="editLink()">+ 添加链接</button></div>
+  let h = `<div class="page-header"><h1>🔗 网址</h1><button class="btn btn-primary" onclick="editLink()">+ 添加网址</button></div>
     <div class="filters"><span class="filter-label">分类：</span>
     <button class="btn btn-sm ${cat?'':'btn-primary'}" onclick="filterLinks('')">全部</button>`;
-  CATS_L.forEach(c => h += `<button class="btn btn-sm ${cat===c?'btn-primary':''}" onclick="filterLinks('${c}')">${c}</button>`);
+  CATS.forEach(c => h += `<button class="btn btn-sm ${cat===c?'btn-primary':''}" onclick="filterLinks('${c}')">${c}</button>`);
   h += `</div>`;
-  if(tag) h += `<p style="margin-bottom:16px;color:var(--tm)">标签：<span class="tag">${tag}</span> <a href="#" onclick="filterLinks('${cat}');return false">✕</a></p>`;
 
   if(data&&data.length) {
-    data.forEach(l => h += cardLink(l, true));
+    data.forEach(l => h += cardLink(l));
   } else {
-    h += `<div class="empty-state"><div class="icon">🔗</div><p>暂无链接</p></div>`;
+    h += `<div class="empty-state"><div class="icon">🔗</div><p>暂无网址</p></div>`;
   }
   return h;
 }
-function filterLinks(cat, tag) {
-  let p = '?';
-  if(cat) p += `category=${encodeURIComponent(cat)}`;
-  if(tag) p += (p.length>1?'&':'') + `tag=${encodeURIComponent(tag)}`;
-  history.pushState({},'',p||'?');
+function filterLinks(cat) {
+  let p = cat ? `?category=${encodeURIComponent(cat)}` : '?';
+  history.pushState({},'',p);
   render();
 }
 
@@ -232,50 +217,27 @@ function filterLinks(cat, tag) {
 async function renderReads() {
   const urlP = new URLSearchParams(window.location.search);
   const cat = urlP.get('category')||'';
-  const tag = urlP.get('tag')||'';
   let q = sb.from('reads').select('*').order('updated_at',{ascending:false});
   if(cat) q = q.eq('category',cat);
-  let {data} = await q;
-  if(tag) data = (data||[]).filter(r => parsTags(r.tags).includes(tag));
+  const {data} = await q;
 
-  let h = `<div class="page-header"><h1>📖 读后感</h1><button class="btn btn-primary" onclick="editRead()">+ 添加读后感</button></div>
+  let h = `<div class="page-header"><h1>📄 PDF</h1><button class="btn btn-primary" onclick="editRead()">+ 添加 PDF</button></div>
     <div class="filters"><span class="filter-label">分类：</span>
     <button class="btn btn-sm ${cat?'':'btn-primary'}" onclick="filterReads('')">全部</button>`;
-  CATS_R.forEach(c => h += `<button class="btn btn-sm ${cat===c?'btn-primary':''}" onclick="filterReads('${c}')">${c}</button>`);
+  CATS.forEach(c => h += `<button class="btn btn-sm ${cat===c?'btn-primary':''}" onclick="filterReads('${c}')">${c}</button>`);
   h += `</div>`;
-  if(tag) h += `<p style="margin-bottom:16px;color:var(--tm)">标签：<span class="tag">${tag}</span> <a href="#" onclick="filterReads('${cat}')">✕</a></p>`;
 
   if(data&&data.length) {
-    data.forEach(r => h += cardRead(r, true));
+    data.forEach(r => h += cardRead(r));
   } else {
-    h += `<div class="empty-state"><div class="icon">📖</div><p>暂无读后感</p></div>`;
+    h += `<div class="empty-state"><div class="icon">📄</div><p>暂无 PDF</p></div>`;
   }
   return h;
 }
-function filterReads(cat, tag) {
-  let p = '?';
-  if(cat) p += `category=${encodeURIComponent(cat)}`;
-  if(tag) p += (p.length>1?'&':'') + `tag=${encodeURIComponent(tag)}`;
-  history.pushState({},'',p||'?');
+function filterReads(cat) {
+  let p = cat ? `?category=${encodeURIComponent(cat)}` : '?';
+  history.pushState({},'',p);
   render();
-}
-
-// ── Tags ───────────────────────────────────────────
-async function renderTags() {
-  const {data:links} = await sb.from('links').select('tags');
-  const {data:reads} = await sb.from('reads').select('tags');
-  const allT = new Set();
-  [...(links||[]),...(reads||[])].forEach(r => parsTags(r.tags).forEach(t => allT.add(t)));
-  let h = `<div class="page-header"><h1>🏷️ 标签索引</h1></div>
-    <p style="color:var(--tm);margin-bottom:20px">${allT.size} 个标签</p><div class="tag-cloud">`;
-  [...allT].sort().forEach(t => h += `
-    <div style="text-align:center">
-      <span class="tag" style="cursor:pointer" onclick="showPage('links');filterLinks('','${t}')">${t}</span>
-      <div style="font-size:.7rem;color:var(--tm);margin-top:2px">链接 · 读后感</div>
-    </div>`);
-  h += `</div>`;
-  if(!allT.size) h = `<div class="page-header"><h1>🏷️ 标签索引</h1></div><div class="empty-state"><div class="icon">🏷️</div><p>还没有标签</p></div>`;
-  return h;
 }
 
 // ── Search ─────────────────────────────────────────
@@ -283,59 +245,52 @@ async function renderSearch() {
   const qs = document.getElementById('searchBox').value.trim();
   if(!qs) { showPage('home'); return ''; }
   const like = `%${qs}%`;
-  const {data:links} = await sb.from('links').select('*').or(`title.ilike.${like},summary.ilike.${like},thoughts.ilike.${like}`).order('updated_at',{ascending:false}).limit(20);
-  const {data:reads} = await sb.from('reads').select('*').or(`title.ilike.${like},book.ilike.${like},author.ilike.${like},summary.ilike.${like},thoughts.ilike.${like}`).order('updated_at',{ascending:false}).limit(20);
+  const {data:links} = await sb.from('links').select('*').or(`title.ilike.${like},summary.ilike.${like}`).order('updated_at',{ascending:false}).limit(20);
+  const {data:reads} = await sb.from('reads').select('*').or(`title.ilike.${like},author.ilike.${like},summary.ilike.${like}`).order('updated_at',{ascending:false}).limit(20);
   let h = `<div class="page-header"><h1>🔍 搜索："${qs}"</h1></div>
-    <p style="color:var(--tm);margin-bottom:20px">找到 <strong>${(links||[]).length}</strong> 条链接和 <strong>${(reads||[]).length}</strong> 条读后感</p>`;
+    <p style="color:var(--tm);margin-bottom:20px">找到 <strong>${(links||[]).length}</strong> 条网址和 <strong>${(reads||[]).length}</strong> 条 PDF</p>`;
   if(!links?.length && !reads?.length) h += `<div class="empty-state"><div class="icon">🔍</div><p>没有找到相关内容</p></div>`;
   if(links?.length) {
-    h += `<h2 style="font-size:1.1rem;margin-bottom:12px;border-bottom:2px solid var(--pl);padding-bottom:8px">🔗 链接</h2>`;
-    links.forEach(l => h += cardLink(l, true));
+    h += `<h2 style="font-size:1.1rem;margin-bottom:12px;border-bottom:2px solid var(--pl);padding-bottom:8px">🔗 网址 (${links.length})</h2>`;
+    links.forEach(l => h += cardLink(l));
   }
   if(reads?.length) {
-    h += `<h2 style="font-size:1.1rem;margin:24px 0 12px;border-bottom:2px solid var(--pl);padding-bottom:8px">📖 读后感</h2>`;
-    reads.forEach(r => h += cardRead(r, true));
+    h += `<h2 style="font-size:1.1rem;margin:24px 0 12px;border-bottom:2px solid var(--pl);padding-bottom:8px">📄 PDF (${reads.length})</h2>`;
+    reads.forEach(r => h += cardRead(r));
   }
   return h;
 }
 
 // ── Card components ────────────────────────────────
-function cardLink(l, showActions=true) {
-  let t = parsTags(l.tags).map(t => `<span class="tag" onclick="showPage('links');filterLinks('','${t}')">${t}</span>`).join('');
+function cardLink(l) {
   return `<div class="card">
-    ${showActions?`<div class="card-actions">
-      <button class="btn btn-xs" onclick="editLink(${l.id})">✏️</button>
-      <button class="btn btn-xs btn-danger" onclick="delLink(${l.id})">🗑️</button>
-    </div>`:''}
     <div class="card-title"><a href="${esc(l.url)}" target="_blank">${esc(l.title)} ↗</a></div>
     <div class="card-meta">
-      <span class="tag">${esc(l.category)}</span><span>${esc(l.status)}</span><span>${fmtDate(l.created_at)}</span>
+      <span class="tag">${esc(l.category||'其他')}</span>
+      ${l.thoughts?`<span>👤 ${esc(l.thoughts)}</span>`:''}
+      <span>${fmtDate(l.created_at)}</span>
     </div>
     ${l.summary?`<div class="card-body">${esc(l.summary).substring(0,200)}</div>`:''}
-    ${t?`<div class="tags-row">${t}</div>`:''}
+    <div class="card-actions">
+      <button class="btn btn-sm" onclick="editLink(${l.id})">✏️ 编辑</button>
+      <button class="btn btn-sm btn-danger" onclick="delLink(${l.id})">🗑️ 删除</button>
+    </div>
   </div>`;
 }
 
-function cardRead(r, showActions=true) {
-  let t = parsTags(r.tags).map(t => `<span class="tag" onclick="showPage('reads');filterReads('','${t}')">${t}</span>`).join('');
-  let stars = r.rating ? '⭐'.repeat(r.rating) : '';
+function cardRead(r) {
   return `<div class="card">
-    ${showActions?`<div class="card-actions">
-      <button class="btn btn-xs" onclick="editRead(${r.id})">✏️</button>
-      <button class="btn btn-xs btn-danger" onclick="delRead(${r.id})">🗑️</button>
-    </div>`:''}
     <div class="card-title">${esc(r.title)}</div>
     <div class="card-meta">
-      <span class="tag">${esc(r.category)}</span>
-      ${r.book?`<span>📘 ${esc(r.book)}</span>`:''}
-      ${r.author?`<span>✍️ ${esc(r.author)}</span>`:''}
-      ${stars?`<span class="stars">${stars}</span>`:''}
+      <span class="tag">${esc(r.category||'其他')}</span>
+      ${r.author?`<span>👤 ${esc(r.author)}</span>`:''}
       <span>${fmtDate(r.created_at)}</span>
     </div>
     ${r.summary?`<div class="card-body">${esc(r.summary).substring(0,200)}</div>`:''}
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
-      ${r.pdf_key?`<a href="${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${r.pdf_key}" class="pdf-link" target="_blank">📎 查看 PDF</a>`:''}
-      ${t}
+    ${r.pdf_key?`<div style="margin-top:8px"><a href="${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${r.pdf_key}" class="pdf-link" target="_blank">📎 查看 PDF</a></div>`:''}
+    <div class="card-actions">
+      <button class="btn btn-sm" onclick="editRead(${r.id})">✏️ 编辑</button>
+      <button class="btn btn-sm btn-danger" onclick="delRead(${r.id})">🗑️ 删除</button>
     </div>
   </div>`;
 }
@@ -348,45 +303,41 @@ async function editLink(id) {
   if(id) { const {data} = await sb.from('links').select('*').eq('id',id).single(); l = data; }
   currentPage = 'linkForm';
   render();
-  // Store data for form
   window._linkData = l;
 }
 async function renderLinkForm() {
   const l = window._linkData;
-  let h = `<div class="page-header"><h1>${l?'✏️ 编辑链接':'➕ 添加新链接'}</h1>
+  let h = `<div class="page-header"><h1>${l?'✏️ 编辑网址':'➕ 添加新网址'}</h1>
     <button class="btn" onclick="showPage('links')">← 返回</button></div>
-    <form class="card" style="max-width:720px" onsubmit="saveLink(event)">
+    <form class="card" style="max-width:720px;padding-right:24px" onsubmit="saveLink(event)">
     ${l?`<input type="hidden" name="id" value="${l.id}">`:''}
-    <div class="form-group"><label>文章标题 <span style="color:var(--d)">*</span></label>
+    <div class="form-group"><label>网址名称 <span style="color:var(--d)">*</span></label>
       <input class="form-control" name="title" required value="${esc2(l?.title||'')}" placeholder="如：React 19 新特性详解"></div>
     <div class="form-group"><label>链接 <span style="color:var(--d)">*</span></label>
       <input class="form-control" name="url" type="url" required value="${esc2(l?.url||'')}" placeholder="https://..."></div>
-    <div class="form-group"><label>分类</label><select class="form-control" name="category">${CATS_L.map(c => `<option ${l?.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
-    <div class="form-group"><label>标签 <span class="hint">逗号分隔</span></label>
-      <input class="form-control" name="tags" value="${esc2(parsTags(l?.tags||'').join(', '))}" placeholder="react, frontend"></div>
-    <div class="form-group"><label>状态</label><select class="form-control" name="status">
-      <option ${l?.status==='未读'?'selected':''}>未读</option><option ${l?.status==='在读'?'selected':''}>在读</option><option ${l?.status==='已读'?'selected':''}>已读</option></select></div>
+    <div class="form-group"><label>分类</label><select class="form-control" name="category">${CATS.map(c => `<option ${l?.category===c?'selected':''} ${!l&&c==='其他'?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-group"><label>上传人</label>
+      <input class="form-control" name="author" value="${esc2(l?.thoughts||'')}" placeholder="你的名字"></div>
     <div class="form-group"><label>📝 简介</label><textarea class="form-control" name="summary" rows="4" placeholder="简要描述...">${esc2(l?.summary||'')}</textarea></div>
-    <div class="form-group"><label>💭 个人感受</label><textarea class="form-control" name="thoughts" rows="6" placeholder="你的读后感...">${esc2(l?.thoughts||'')}</textarea></div>
     <button class="btn btn-primary">💾 保存</button></form>`;
   return h;
 }
 async function saveLink(e) {
   e.preventDefault();
   const fd = new FormData(e.target);
-  const tags = fd.get('tags').split(/[,，]/).map(s=>s.trim()).filter(Boolean);
   const obj = {
-    title: fd.get('title'), url: fd.get('url'), category: fd.get('category'),
-    tags: JSON.stringify(tags), status: fd.get('status'),
-    summary: fd.get('summary'), thoughts: fd.get('thoughts'),
+    title: fd.get('title'), url: fd.get('url'),
+    category: fd.get('category')||'其他',
+    thoughts: fd.get('author'),
+    summary: fd.get('summary'),
     updated_at: new Date().toISOString()
   };
-  if(e.target.id.value) {
-    await sb.from('links').update(obj).eq('id', e.target.id.value);
-    flash('链接已更新 ✓');
+  if(fd.get('id')) {
+    await sb.from('links').update(obj).eq('id', fd.get('id'));
+    flash('网址已更新 ✓');
   } else {
     await sb.from('links').insert(obj);
-    flash('链接已添加 ✓');
+    flash('网址已添加 ✓');
   }
   showPage('links');
 }
@@ -409,43 +360,27 @@ async function editRead(id) {
 }
 async function renderReadForm() {
   const r = window._readData;
-  let h = `<div class="page-header"><h1>${r?'✏️ 编辑读后感':'➕ 添加新读后感'}</h1>
+  let h = `<div class="page-header"><h1>${r?'✏️ 编辑 PDF':'➕ 添加新 PDF'}</h1>
     <button class="btn" onclick="showPage('reads')">← 返回</button></div>
-    <form class="card" style="max-width:720px" onsubmit="saveRead(event)" enctype="multipart/form-data">
+    <form class="card" style="max-width:720px;padding-right:24px" onsubmit="saveRead(event)" enctype="multipart/form-data">
     ${r?`<input type="hidden" name="id" value="${r.id}">`:''}
     <div class="form-group"><label>标题 <span style="color:var(--d)">*</span></label>
       <input class="form-control" name="title" required value="${esc2(r?.title||'')}" placeholder="如：《代码整洁之道》读后感"></div>
-    <div class="form-group"><label>书名 <span class="hint">原著</span></label>
-      <input class="form-control" name="book" value="${esc2(r?.book||'')}" placeholder="Clean Architecture"></div>
-    <div class="form-group"><label>作者</label>
-      <input class="form-control" name="author" value="${esc2(r?.author||'')}" placeholder="Robert C. Martin"></div>
-    <div class="form-group"><label>分类</label><select class="form-control" name="category">${CATS_R.map(c => `<option ${r?.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
-    <div class="form-group"><label>标签 <span class="hint">逗号分隔</span></label>
-      <input class="form-control" name="tags" value="${esc2(parsTags(r?.tags||'').join(', '))}" placeholder="architecture, best-practices"></div>
-    <div class="form-group"><label>评分</label><div class="stars-input" id="starsInput">${[1,2,3,4,5].map(i => `<button type="button" data-v="${i}" class="${i>(r?.rating||0)?'empty':''}" onclick="setRating(${i})">⭐</button>`).join('')}</div>
-      <input type="hidden" name="rating" id="ratingVal" value="${r?.rating||0}"></div>
-    <div class="form-group"><label>📎 PDF <span class="hint">最大10MB</span></label>
+    <div class="form-group"><label>分类</label><select class="form-control" name="category">${CATS.map(c => `<option ${r?.category===c?'selected':''} ${!r&&c==='其他'?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-group"><label>上传人</label>
+      <input class="form-control" name="author" value="${esc2(r?.author||'')}" placeholder="你的名字"></div>
+    <div class="form-group"><label>📎 上传 PDF <span class="hint">最大10MB</span></label>
       ${r?.pdf_key?`<p style="font-size:.85rem;margin-bottom:6px">当前：<a href="${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${r.pdf_key}" target="_blank">${r.pdf_key}</a></p>`:''}
       <input type="file" class="form-control" name="pdf_file" accept=".pdf"></div>
     <div class="form-group"><label>📖 简介</label><textarea class="form-control" name="summary" rows="4">${esc2(r?.summary||'')}</textarea></div>
-    <div class="form-group"><label>💡 核心观点</label><textarea class="form-control" name="key_points" rows="5">${esc2(r?.key_points||'')}</textarea></div>
-    <div class="form-group"><label>💭 个人感受</label><textarea class="form-control" name="thoughts" rows="6">${esc2(r?.thoughts||'')}</textarea></div>
-    <div class="form-group"><label>🎯 行动清单 <span class="hint">每行一个</span></label><textarea class="form-control" name="action_items" rows="3">${esc2(r?.action_items||'')}</textarea></div>
     <button class="btn btn-primary">💾 保存</button></form>`;
   return h;
-}
-function setRating(v) {
-  document.getElementById('ratingVal').value = v;
-  document.querySelectorAll('#starsInput button').forEach((b,i) => b.classList.toggle('empty', i>=v));
 }
 async function saveRead(e) {
   e.preventDefault();
   const fd = new FormData(e.target);
-  const tags = fd.get('tags').split(/[,，]/).map(s=>s.trim()).filter(Boolean);
   const pdfFile = fd.get('pdf_file');
   let pdfKey = '';
-
-  // Upload PDF if provided
   if(pdfFile && pdfFile.name) {
     const ext = pdfFile.name.split('.').pop();
     const key = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
@@ -453,23 +388,19 @@ async function saveRead(e) {
     if(error) { flash('PDF上传失败: '+error.message, 'error'); return; }
     pdfKey = key;
   }
-
   const obj = {
-    title: fd.get('title'), book: fd.get('book'), author: fd.get('author'),
-    category: fd.get('category'), tags: JSON.stringify(tags),
-    rating: parseInt(fd.get('rating'))||0,
-    summary: fd.get('summary'), key_points: fd.get('key_points'),
-    thoughts: fd.get('thoughts'), action_items: fd.get('action_items'),
+    title: fd.get('title'), category: fd.get('category')||'其他',
+    author: fd.get('author'),
+    summary: fd.get('summary'),
     updated_at: new Date().toISOString()
   };
   if(pdfKey) obj.pdf_key = pdfKey;
-
   if(fd.get('id')) {
     await sb.from('reads').update(obj).eq('id', fd.get('id'));
-    flash('读后感已更新 ✓');
+    flash('PDF 已更新 ✓');
   } else {
     await sb.from('reads').insert(obj);
-    flash('读后感已添加 ✓');
+    flash('PDF 已添加 ✓');
   }
   showPage('reads');
 }
@@ -483,7 +414,6 @@ async function delRead(id) {
 }
 
 // ── Utils ──────────────────────────────────────────
-function parsTags(t) { try{return JSON.parse(t)}catch(e){return typeof t==='string'?t.split(',').map(s=>s.trim()).filter(Boolean):[]} }
 function esc(s) { if(!s) return ''; const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 function esc2(s) { if(!s) return ''; return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmtDate(d) { if(!d) return ''; return new Date(d).toISOString().slice(0,10); }
