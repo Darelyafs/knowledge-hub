@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>知识共享库</title>
+<title>课题组资源共享库</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--p:#4f46e5;--pl:#eef2ff;--s:#059669;--sb:#ecfdf5;--d:#dc2626;--db:#fef2f2;--bg:#f8fafc;--cb:#fff;--b:#e2e8f0;--t:#1e293b;--tm:#94a3b8;--r:10px}
@@ -81,7 +81,7 @@ select.form-control{cursor:pointer}
 <body>
 <nav class="navbar">
   <div class="container nav-inner">
-    <span class="nav-brand" onclick="showPage('home')">📚 知识共享库</span>
+    <span class="nav-brand" onclick="showPage('home')">📚 课题组资源共享库</span>
     <div class="nav-links" id="navLinks">
       <button class="nav-link active" data-page="home" onclick="showPage('home')">首页</button>
       <button class="nav-link" data-page="links" onclick="showPage('links')">🔗 网址</button>
@@ -95,7 +95,7 @@ select.form-control{cursor:pointer}
 </nav>
 <div id="flashContainer" class="container"></div>
 <main class="container main-content" id="mainContent"></main>
-<footer class="footer"><p>📚 知识共享库</p></footer>
+<footer class="footer"><p>📚 课题组资源共享库</p></footer>
 
 <script>
 // ── Init ───────────────────────────────────────────
@@ -150,7 +150,7 @@ async function renderHome() {
 
   let h = `
     <div style="text-align:center;padding:20px 0 32px">
-      <h1 style="font-size:2rem;margin-bottom:8px">📚 知识共享库</h1>
+      <h1 style="font-size:2rem;margin-bottom:8px">📚 课题组资源共享库</h1>
       <p style="color:var(--tm);font-size:1rem">网址 · PDF 资料</p>
     </div>
     <div class="home-grid">
@@ -312,12 +312,12 @@ async function renderLinkForm() {
     <form class="card" style="max-width:720px;padding-right:24px" onsubmit="saveLink(event)">
     ${l?`<input type="hidden" name="id" value="${l.id}">`:''}
     <div class="form-group"><label>网址名称 <span style="color:var(--d)">*</span></label>
-      <input class="form-control" name="title" required value="${esc2(l?.title||'')}" placeholder="如：React 19 新特性详解"></div>
+      <input class="form-control" name="title" required value="${esc2(l?.title||'')}" placeholder=""></div>
     <div class="form-group"><label>链接 <span style="color:var(--d)">*</span></label>
       <input class="form-control" name="url" type="url" required value="${esc2(l?.url||'')}" placeholder="https://..."></div>
     <div class="form-group"><label>分类</label><select class="form-control" name="category">${CATS.map(c => `<option ${l?.category===c?'selected':''} ${!l&&c==='其他'?'selected':''}>${c}</option>`).join('')}</select></div>
     <div class="form-group"><label>上传人</label>
-      <input class="form-control" name="author" value="${esc2(l?.thoughts||'')}" placeholder="你的名字"></div>
+      <input class="form-control" name="author" value="${esc2(l?.thoughts||'')}" placeholder="选填"></div>
     <div class="form-group"><label>📝 简介</label><textarea class="form-control" name="summary" rows="4" placeholder="简要描述...">${esc2(l?.summary||'')}</textarea></div>
     <button class="btn btn-primary">💾 保存</button></form>`;
   return h;
@@ -365,10 +365,10 @@ async function renderReadForm() {
     <form class="card" style="max-width:720px;padding-right:24px" onsubmit="saveRead(event)" enctype="multipart/form-data">
     ${r?`<input type="hidden" name="id" value="${r.id}">`:''}
     <div class="form-group"><label>标题 <span style="color:var(--d)">*</span></label>
-      <input class="form-control" name="title" required value="${esc2(r?.title||'')}" placeholder="如：《代码整洁之道》读后感"></div>
+      <input class="form-control" name="title" required value="${esc2(r?.title||'')}" placeholder=""></div>
     <div class="form-group"><label>分类</label><select class="form-control" name="category">${CATS.map(c => `<option ${r?.category===c?'selected':''} ${!r&&c==='其他'?'selected':''}>${c}</option>`).join('')}</select></div>
     <div class="form-group"><label>上传人</label>
-      <input class="form-control" name="author" value="${esc2(r?.author||'')}" placeholder="你的名字"></div>
+      <input class="form-control" name="author" value="${esc2(r?.author||'')}" placeholder="选填"></div>
     <div class="form-group"><label>📎 上传 PDF <span class="hint">最大10MB</span></label>
       ${r?.pdf_key?`<p style="font-size:.85rem;margin-bottom:6px">当前：<a href="${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${r.pdf_key}" target="_blank">${r.pdf_key}</a></p>`:''}
       <input type="file" class="form-control" name="pdf_file" accept=".pdf"></div>
