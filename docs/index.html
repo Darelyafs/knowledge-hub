@@ -62,8 +62,12 @@ select.form-control{cursor:pointer}
 .stat-card{background:var(--cb);border:1px solid var(--b);border-radius:var(--r);padding:18px 20px;text-align:center}
 .stat-num{font-size:2rem;font-weight:700;color:var(--p)}
 .stat-label{font-size:.85rem;color:var(--tm);margin-top:2px}
-.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;margin-bottom:28px}
 @media(max-width:700px){.home-grid{grid-template-columns:1fr}}
+.need-resolved{opacity:.45;transition:opacity .2s}
+.need-resolved:hover{opacity:.75}
+.need-check{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;color:var(--s);cursor:pointer;margin-top:4px;user-select:none}
+.need-check input{cursor:pointer;width:16px;height:16px}
 .home-section h2{font-size:1.15rem;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--pl)}
 .module-card{display:block;background:var(--cb);border:2px solid var(--b);border-radius:var(--r);padding:28px 24px;text-align:center;transition:all .2s;text-decoration:none;color:var(--t);cursor:pointer}
 .module-card:hover{border-color:var(--p);box-shadow:0 4px 16px rgba(79,70,229,.1);transform:translateY(-2px);text-decoration:none}
@@ -94,6 +98,7 @@ select.form-control{cursor:pointer}
       <button class="nav-link active" data-page="home" onclick="showPage('home')">首页</button>
       <button class="nav-link" data-page="links" onclick="showPage('links')">🔗 网址</button>
       <button class="nav-link" data-page="reads" onclick="showPage('reads')">📄 PDF</button>
+      <button class="nav-link" data-page="needs" onclick="showPage('needs')">📋 需求</button>
     </div>
     <span class="nav-search"><span class="search-icon">🔍</span><input type="search" class="search-input" id="searchBox" placeholder="搜索..." onkeydown="if(event.key==='Enter')search()"></span>
     <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')">
@@ -139,9 +144,11 @@ async function render() {
       case 'home': mc.innerHTML = await renderHome(); break;
       case 'links': mc.innerHTML = await renderLinks(); break;
       case 'reads': mc.innerHTML = await renderReads(); break;
+      case 'needs': mc.innerHTML = await renderNeeds(); break;
       case 'search': mc.innerHTML = await renderSearch(); break;
       case 'linkForm': mc.innerHTML = await renderLinkForm(); break;
       case 'readForm': mc.innerHTML = await renderReadForm(); break;
+      case 'needForm': mc.innerHTML = await renderNeedForm(); break;
       default: mc.innerHTML = await renderHome();
     }
   } catch(e) {
@@ -153,13 +160,15 @@ async function render() {
 async function renderHome() {
   const {count:lc} = await sb.from('links').select('*',{count:'exact',head:true});
   const {count:rc} = await sb.from('reads').select('*',{count:'exact',head:true});
+  const {count:nc} = await sb.from('needs').select('*',{count:'exact',head:true});
   const {data:links} = await sb.from('links').select('*').order('updated_at',{ascending:false}).limit(3);
   const {data:reads} = await sb.from('reads').select('*').order('updated_at',{ascending:false}).limit(3);
+  const {data:needs} = await sb.from('needs').select('*').order('updated_at',{ascending:false}).limit(3);
 
   let h = `
     <div style="text-align:center;padding:20px 0 32px">
       <h1 style="font-size:2rem;margin-bottom:8px">📚 课题组资源共享库</h1>
-      <p style="color:var(--tm);font-size:1rem">网址 · PDF 资料</p>
+      <p style="color:var(--tm);font-size:1rem">网址 · PDF · 需求</p>
     </div>
     <div class="home-grid">
       <div class="module-card" onclick="showPage('links')">
@@ -173,6 +182,12 @@ async function renderHome() {
         <div class="module-num">${rc||0}</div>
         <div class="module-title">PDF</div>
         <span class="btn btn-primary" style="margin-top:12px">+ 添加 PDF</span>
+      </div>
+      <div class="module-card" onclick="showPage('needs')">
+        <div class="module-icon">📋</div>
+        <div class="module-num">${nc||0}</div>
+        <div class="module-title">需求</div>
+        <span class="btn btn-primary" style="margin-top:12px">+ 添加需求</span>
       </div>
     </div>
     <div class="home-grid" style="margin-top:32px">
@@ -189,6 +204,13 @@ async function renderHome() {
     h += `<a href="#" onclick="showPage('reads')" style="font-size:.9rem">浏览全部 →</a>`;
   } else {
     h += `<div class="empty-state"><div class="icon">📄</div><p>还没有 PDF</p></div>`;
+  }
+  h += `</div><div class="home-section"><h2>📋 最近需求</h2>`;
+  if(needs&&needs.length) {
+    needs.forEach(n => h += cardNeed(n));
+    h += `<a href="#" onclick="showPage('needs')" style="font-size:.9rem">浏览全部 →</a>`;
+  } else {
+    h += `<div class="empty-state"><div class="icon">📋</div><p>还没有需求</p></div>`;
   }
   h += `</div></div>`;
   return h;
@@ -255,9 +277,10 @@ async function renderSearch() {
   const like = `%${qs}%`;
   const {data:links} = await sb.from('links').select('*').or(`title.ilike.${like},summary.ilike.${like}`).order('updated_at',{ascending:false}).limit(20);
   const {data:reads} = await sb.from('reads').select('*').or(`title.ilike.${like},author.ilike.${like},summary.ilike.${like}`).order('updated_at',{ascending:false}).limit(20);
+  const {data:needs} = await sb.from('needs').select('*').or(`title.ilike.${like},author.ilike.${like}`).order('updated_at',{ascending:false}).limit(20);
   let h = `<div class="page-header"><h1>🔍 搜索："${qs}"</h1></div>
-    <p style="color:var(--tm);margin-bottom:20px">找到 <strong>${(links||[]).length}</strong> 条网址和 <strong>${(reads||[]).length}</strong> 条 PDF</p>`;
-  if(!links?.length && !reads?.length) h += `<div class="empty-state"><div class="icon">🔍</div><p>没有找到相关内容</p></div>`;
+    <p style="color:var(--tm);margin-bottom:20px">找到 <strong>${(links||[]).length}</strong> 条网址、<strong>${(reads||[]).length}</strong> 条 PDF 和 <strong>${(needs||[]).length}</strong> 条需求</p>`;
+  if(!links?.length && !reads?.length && !needs?.length) h += `<div class="empty-state"><div class="icon">🔍</div><p>没有找到相关内容</p></div>`;
   if(links?.length) {
     h += `<h2 style="font-size:1.1rem;margin-bottom:12px;border-bottom:2px solid var(--pl);padding-bottom:8px">🔗 网址 (${links.length})</h2>`;
     links.forEach(l => h += cardLink(l));
@@ -265,6 +288,10 @@ async function renderSearch() {
   if(reads?.length) {
     h += `<h2 style="font-size:1.1rem;margin:24px 0 12px;border-bottom:2px solid var(--pl);padding-bottom:8px">📄 PDF (${reads.length})</h2>`;
     reads.forEach(r => h += cardRead(r));
+  }
+  if(needs?.length) {
+    h += `<h2 style="font-size:1.1rem;margin:24px 0 12px;border-bottom:2px solid var(--pl);padding-bottom:8px">📋 需求 (${needs.length})</h2>`;
+    needs.forEach(n => h += cardNeed(n));
   }
   return h;
 }
@@ -296,11 +323,11 @@ function cardRead(r) {
     </div>
     ${r.summary?`<div class="card-body">${esc(r.summary).substring(0,200)}</div>`:''}
     ${r.pdf_key?`<div style="margin-top:8px"><a href="${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${r.pdf_key}" class="pdf-link" target="_blank">📎 查看 PDF</a></div>`:''}
-    ${r.thoughts?`<div class="feedback-badge" onclick="showFeedback(${r.id})" title="点击查看/编辑反馈">💬 已有反馈 — ${esc(r.thoughts).substring(0,80)}${r.thoughts.length>80?'...':''}</div>`:''}
+    ${r.thoughts?`<div class="feedback-badge" onclick="showFeedback('reads',${r.id})" title="点击查看/编辑反馈">💬 已有反馈 — ${esc(r.thoughts).substring(0,80)}${r.thoughts.length>80?'...':''}</div>`:''}
     <div class="card-actions">
       <button class="btn btn-sm" onclick="editRead(${r.id})">✏️ 编辑</button>
       <button class="btn btn-sm btn-danger" onclick="delRead(${r.id})">🗑️ 删除</button>
-      <button class="btn btn-sm" onclick="showFeedback(${r.id})" style="color:#d97706;border-color:#fde68a">💬 反馈</button>
+      <button class="btn btn-sm" onclick="showFeedback('reads',${r.id})" style="color:#d97706;border-color:#fde68a">💬 反馈</button>
     </div>
   </div>`;
 }
@@ -423,11 +450,118 @@ async function delRead(id) {
   render();
 }
 
+// ── Needs list ──────────────────────────────────────
+async function renderNeeds() {
+  const urlP = new URLSearchParams(window.location.search);
+  const cat = urlP.get('category')||'';
+  let q = sb.from('needs').select('*').order('updated_at',{ascending:false});
+  if(cat) q = q.eq('category',cat);
+  const {data} = await q;
+
+  let h = `<div class="page-header"><h1>📋 需求</h1><button class="btn btn-primary" onclick="editNeed()">+ 添加需求</button></div>
+    <div class="filters"><span class="filter-label">分类：</span>
+    <button class="btn btn-sm ${cat?'':'btn-primary'}" onclick="filterNeeds('')">全部</button>`;
+  CATS.forEach(c => h += `<button class="btn btn-sm ${cat===c?'btn-primary':''}" onclick="filterNeeds('${c}')">${c}</button>`);
+  h += `</div>`;
+
+  if(data&&data.length) {
+    data.forEach(n => h += cardNeed(n));
+  } else {
+    h += `<div class="empty-state"><div class="icon">📋</div><p>暂无需求</p></div>`;
+  }
+  return h;
+}
+function filterNeeds(cat) {
+  let p = cat ? `?category=${encodeURIComponent(cat)}` : '?';
+  history.pushState({},'',p);
+  render();
+}
+
+// ── Need card ───────────────────────────────────────
+function cardNeed(n) {
+  return `<div class="card ${n.resolved?'need-resolved':''}">
+    <div class="card-title">${esc(n.title)}</div>
+    <div class="card-meta">
+      <span class="tag">${esc(n.category||'其他')}</span>
+      ${n.author?`<span>👤 ${esc(n.author)}</span>`:''}
+      <span>${fmtDate(n.created_at)}</span>
+    </div>
+    ${n.summary?`<div class="card-body">${esc(n.summary).substring(0,200)}</div>`:''}
+    ${n.thoughts?`<div class="feedback-badge" onclick="showFeedback('needs',${n.id})" title="点击查看/编辑反馈">💬 已有反馈 — ${esc(n.thoughts).substring(0,80)}${n.thoughts.length>80?'...':''}</div>`:''}
+    <label class="need-check" onclick="event.stopPropagation()">
+      <input type="checkbox" ${n.resolved?'checked':''} onchange="toggleResolved(${n.id},this.checked)"> 已解决
+    </label>
+    <div class="card-actions">
+      <button class="btn btn-sm" onclick="editNeed(${n.id})">✏️ 编辑</button>
+      <button class="btn btn-sm btn-danger" onclick="delNeed(${n.id})">🗑️ 删除</button>
+      <button class="btn btn-sm" onclick="showFeedback('needs',${n.id})" style="color:#d97706;border-color:#fde68a">💬 反馈</button>
+    </div>
+  </div>`;
+}
+
+// ── Need form ───────────────────────────────────────
+let editingNeedId = null;
+async function editNeed(id) {
+  editingNeedId = id||null;
+  let n = null;
+  if(id) { const {data} = await sb.from('needs').select('*').eq('id',id).single(); n = data; }
+  currentPage = 'needForm';
+  render();
+  window._needData = n;
+}
+async function renderNeedForm() {
+  const n = window._needData;
+  let h = `<div class="page-header"><h1>${n?'✏️ 编辑需求':'➕ 添加新需求'}</h1>
+    <button class="btn" onclick="showPage('needs')">← 返回</button></div>
+    <form class="card" style="max-width:720px;padding-right:24px" onsubmit="saveNeed(event)">
+    ${n?`<input type="hidden" name="id" value="${n.id}">`:''}
+    <div class="form-group"><label>需求简述 <span style="color:var(--d)">*</span></label>
+      <input class="form-control" name="title" required value="${esc2(n?.title||'')}" placeholder="简述需求内容..."></div>
+    <div class="form-group"><label>分类</label><select class="form-control" name="category">${CATS.map(c => `<option ${n?.category===c?'selected':''} ${!n&&c==='其他'?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="form-group"><label>上传人</label>
+      <input class="form-control" name="author" value="${esc2(n?.author||'')}" placeholder="选填"></div>
+    ${n?`<div class="form-group"><label class="need-check"><input type="checkbox" name="resolved" value="1" ${n.resolved?'checked':''}> 已解决</label></div>`:''}
+    <button class="btn btn-primary">💾 保存</button></form>`;
+  return h;
+}
+async function saveNeed(e) {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const obj = {
+    title: fd.get('title'),
+    category: fd.get('category')||'其他',
+    author: fd.get('author'),
+    updated_at: new Date().toISOString()
+  };
+  if(fd.get('id')) obj.resolved = fd.get('resolved')==='1';
+  if(fd.get('id')) {
+    await sb.from('needs').update(obj).eq('id', fd.get('id'));
+    flash('需求已更新 ✓');
+  } else {
+    await sb.from('needs').insert(obj);
+    flash('需求已添加 ✓');
+  }
+  showPage('needs');
+}
+async function delNeed(id) {
+  if(!confirm('确定删除？')) return;
+  await sb.from('needs').delete().eq('id',id);
+  flash('已删除');
+  render();
+}
+async function toggleResolved(id, val) {
+  await sb.from('needs').update({resolved:val, updated_at:new Date().toISOString()}).eq('id',id);
+  flash(val?'已标记为已解决':'已取消标记');
+  render();
+}
+
 // ── Feedback modal ──────────────────────────────────
-let feedbackReadId = null;
-async function showFeedback(id) {
-  feedbackReadId = id;
-  const {data:r} = await sb.from('reads').select('thoughts').eq('id',id).single();
+let feedbackTable = null;
+let feedbackId = null;
+async function showFeedback(table, id) {
+  feedbackTable = table;
+  feedbackId = id;
+  const {data:r} = await sb.from(table).select('thoughts').eq('id',id).single();
   const existing = r?.thoughts || '';
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
@@ -445,13 +579,14 @@ async function showFeedback(id) {
   document.getElementById('feedbackText').focus();
 }
 function closeFeedback() {
-  feedbackReadId = null;
+  feedbackTable = null;
+  feedbackId = null;
   const el = document.getElementById('feedbackModal');
   if(el) el.remove();
 }
 async function saveFeedback() {
   const text = document.getElementById('feedbackText').value;
-  await sb.from('reads').update({thoughts: text, updated_at: new Date().toISOString()}).eq('id', feedbackReadId);
+  await sb.from(feedbackTable).update({thoughts: text, updated_at: new Date().toISOString()}).eq('id', feedbackId);
   closeFeedback();
   flash('反馈已保存 ✓');
   render();
