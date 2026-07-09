@@ -76,6 +76,14 @@ select.form-control{cursor:pointer}
 .pdf-link:hover{background:#fde68a;text-decoration:none}
 .hidden{display:none!important}
 .spinner{text-align:center;padding:40px;color:var(--tm)}
+/* feedback modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:999;display:flex;align-items:center;justify-content:center}
+.modal-box{background:var(--cb);border-radius:var(--r);padding:28px;max-width:520px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal-box h3{margin-bottom:16px;font-size:1.1rem}
+.modal-box textarea{min-height:160px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.feedback-badge{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:.82rem;color:#92400e;background:#fffbeb;padding:6px 10px;border-radius:6px;border-left:3px solid #f59e0b;cursor:pointer}
+.feedback-badge:hover{background:#fef3c7}
 </style>
 </head>
 <body>
@@ -288,9 +296,11 @@ function cardRead(r) {
     </div>
     ${r.summary?`<div class="card-body">${esc(r.summary).substring(0,200)}</div>`:''}
     ${r.pdf_key?`<div style="margin-top:8px"><a href="${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${r.pdf_key}" class="pdf-link" target="_blank">📎 查看 PDF</a></div>`:''}
+    ${r.thoughts?`<div class="feedback-badge" onclick="showFeedback(${r.id})" title="点击查看/编辑反馈">💬 已有反馈 — ${esc(r.thoughts).substring(0,80)}${r.thoughts.length>80?'...':''}</div>`:''}
     <div class="card-actions">
       <button class="btn btn-sm" onclick="editRead(${r.id})">✏️ 编辑</button>
       <button class="btn btn-sm btn-danger" onclick="delRead(${r.id})">🗑️ 删除</button>
+      <button class="btn btn-sm" onclick="showFeedback(${r.id})" style="color:#d97706;border-color:#fde68a">💬 反馈</button>
     </div>
   </div>`;
 }
@@ -410,6 +420,40 @@ async function delRead(id) {
   if(data?.pdf_key) { await sb.storage.from(BUCKET).remove([data.pdf_key]); }
   await sb.from('reads').delete().eq('id',id);
   flash('已删除');
+  render();
+}
+
+// ── Feedback modal ──────────────────────────────────
+let feedbackReadId = null;
+async function showFeedback(id) {
+  feedbackReadId = id;
+  const {data:r} = await sb.from('reads').select('thoughts').eq('id',id).single();
+  const existing = r?.thoughts || '';
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = 'feedbackModal';
+  overlay.innerHTML = `<div class="modal-box" onclick="event.stopPropagation()">
+    <h3>💬 反馈 / 读后感</h3>
+    <textarea class="form-control" id="feedbackText" rows="8" placeholder="输入读后感想、建议或反馈...">${esc2(existing)}</textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeFeedback()">取消</button>
+      <button class="btn btn-primary" onclick="saveFeedback()">💾 保存反馈</button>
+    </div>
+  </div>`;
+  overlay.addEventListener('click', closeFeedback);
+  document.body.appendChild(overlay);
+  document.getElementById('feedbackText').focus();
+}
+function closeFeedback() {
+  feedbackReadId = null;
+  const el = document.getElementById('feedbackModal');
+  if(el) el.remove();
+}
+async function saveFeedback() {
+  const text = document.getElementById('feedbackText').value;
+  await sb.from('reads').update({thoughts: text, updated_at: new Date().toISOString()}).eq('id', feedbackReadId);
+  closeFeedback();
+  flash('反馈已保存 ✓');
   render();
 }
 
