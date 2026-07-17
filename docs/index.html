@@ -339,8 +339,8 @@ async function editLink(id) {
   let l = null;
   if(id) { const {data} = await sb.from('links').select('*').eq('id',id).single(); l = data; }
   currentPage = 'linkForm';
-  render();
   window._linkData = l;
+  render();
 }
 async function renderLinkForm() {
   const l = window._linkData;
@@ -392,8 +392,8 @@ async function editRead(id) {
   let r = null;
   if(id) { const {data} = await sb.from('reads').select('*').eq('id',id).single(); r = data; }
   currentPage = 'readForm';
-  render();
   window._readData = r;
+  render();
 }
 async function renderReadForm() {
   const r = window._readData;
@@ -506,8 +506,8 @@ async function editNeed(id) {
   let n = null;
   if(id) { const {data} = await sb.from('needs').select('*').eq('id',id).single(); n = data; }
   currentPage = 'needForm';
-  render();
   window._needData = n;
+  render();
 }
 async function renderNeedForm() {
   const n = window._needData;
